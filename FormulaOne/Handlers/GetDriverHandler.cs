@@ -20,12 +20,10 @@ namespace FormulaOne.Handlers
         public async Task<GetDriverResponse> Handle(GetDriverQuery request, CancellationToken cancellationToken)
         {
             var driver = await _unitOfWork.Drivers.GetById(request.DriverId);
-            if (driver == null)
-                return null;
 
-            var result = _mapper.Map<GetDriverResponse>(driver);
 
-            return result;
+
+            return driver == null? null : _mapper.Map<GetDriverResponse>(driver); 
             
         }
     }

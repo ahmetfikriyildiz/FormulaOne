@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FormulaOne.Commands;
 using FormulaOne.DataService.Repositories.Interfaces;
 using FormulaOne.Entities.DbSet;
 using FormulaOne.Entities.Dtos.Requests;
@@ -13,11 +14,10 @@ namespace FormulaOne.Controllers
  
     public class DriversController : BaseController
     {
-        private readonly IMediator _mediator;
-
-        public DriversController(IUnitOfWork unitOfWork,IMapper mapper,IMediator mediator):base (unitOfWork, mapper) 
+      
+        public DriversController(IUnitOfWork unitOfWork,IMapper mapper,IMediator mediator):base (unitOfWork, mapper, mediator) 
         {
-            _mediator = mediator;
+           
         }
         [HttpGet]
         public async Task<IActionResult> GetAllDrivers()
@@ -47,12 +47,11 @@ namespace FormulaOne.Controllers
         {
             if (!ModelState.IsValid) 
                 return BadRequest();
-                    
-            var result = _mapper.Map<Driver>(driver);
-            await _unitOfWork.Drivers.Add(result);
-            await _unitOfWork.CompleteAsync();
 
-            return CreatedAtAction(nameof(GetDriver), new { driverId = result.Id }, result);
+            var command = new CreateDriverInfoRequest(driver);
+            var result= await _mediator.Send(command);
+
+            return CreatedAtAction(nameof(GetDriver), new { driverId = result.DriverId }, result);
 
         }
         [HttpPut("")]
@@ -60,28 +59,20 @@ namespace FormulaOne.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest();
+var command = new UpdateDriverInfoRequest(driver);
+            var result = await _mediator.Send(command);
 
-            var result = _mapper.Map<Driver>(driver);
-            await _unitOfWork.Drivers.Add(result);
-            await _unitOfWork.CompleteAsync();
-
-            return NoContent();
+            return result ? NoContent() :  BadRequest();
 
         }
         [HttpDelete]
         [Route("{driverId:guid}")]
         public async Task<IActionResult> DeleteDriver(Guid driverId)
         {
-            var driver = _unitOfWork.Drivers.Delete(driverId);
+            var command = new DeleteDriverInfoRequest(driverId);
+            var result = await _mediator.Send(command);
 
-            if (driver == null)
-
-                return NotFound();
-
-            await _unitOfWork.Drivers.Delete(driverId);
-            await _unitOfWork.CompleteAsync();
-
-            return NoContent();
+            return result ?  NoContent():BadRequest();
         }
 
     }

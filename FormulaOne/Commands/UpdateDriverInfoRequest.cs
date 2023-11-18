@@ -1,6 +1,15 @@
-﻿namespace FormulaOne.Commands
+﻿using FormulaOne.Entities.DbSet;
+using FormulaOne.Entities.Dtos.Requests;
+using MediatR;
+
+namespace FormulaOne.Commands
 {
-    public class UpdateDriverInfoRequest
+    public class UpdateDriverInfoRequest : IRequest<bool>
     {
+        public UpdateDriverRequest Driver { get; }
+        public UpdateDriverInfoRequest(UpdateDriverRequest driver) 
+        {
+            Driver = driver;
+        }
     }
 }
